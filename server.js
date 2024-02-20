@@ -1,26 +1,29 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const fs = require("fs");
 const path = require("path");
-const app = express();
-const PORT = 3000;
+const fs = require("fs");
 
+const app = express();
+const PORT = process.env.PORT || 3000; // Utilizar el puerto proporcionado por el entorno o 3000 como predeterminado
+
+// Middleware para procesar datos JSON y formularios
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(express.static("public"));
+// Middleware para servir archivos estáticos desde la carpeta 'public'
+app.use(express.static(path.join(__dirname, "public")));
 
-// Definir la ruta del archivo historial.json de manera absoluta
+// Definir rutas de archivos de historial y estado
 const obtenerRutaHistorial = () => path.join(__dirname, "historial.json");
 const obtenerRutaEstado = () => path.join(__dirname, "estado.json");
 
-// console.log("Ruta del historial:", obtenerRutaHistorial());
+// Manejadores de rutas
 
 app.post("/guardarInformacion", (req, res) => {
   const participante = req.body;
   const { historial, estado } = obtenerHistorial();
   participante.botonSeleccionado = estado.botonSeleccionado;
-  const nuevoHistorial = [...historial, participante]; // Utilizamos spread operator para crear un nuevo array
+  const nuevoHistorial = [...historial, participante];
   guardarHistorialYEstado({ historial: nuevoHistorial, estado });
   res.send("Información guardada exitosamente.");
 });
@@ -29,6 +32,19 @@ app.get("/obtenerHistorial", (req, res) => {
   const historial = obtenerHistorial().historial;
   res.json(historial);
 });
+
+app.post("/actualizarEstado", (req, res) => {
+  const { botonesSeleccionados } = req.body;
+  guardarEstadoEnServidor(botonesSeleccionados);
+  res.json({ success: true });
+});
+
+app.get("/obtenerEstado", (req, res) => {
+  const estado = obtenerEstadoDesdeServidor();
+  res.json(estado);
+});
+
+// Funciones auxiliares
 
 function obtenerHistorial() {
   try {
@@ -66,12 +82,6 @@ function guardarHistorialYEstado({ historial, estado }) {
   }
 }
 
-app.post("/actualizarEstado", (req, res) => {
-  const { botonesSeleccionados } = req.body;
-  guardarEstadoEnServidor(botonesSeleccionados);
-  res.json({ success: true });
-});
-
 function guardarEstadoEnServidor(botonesSeleccionados) {
   try {
     const rutaEstado = obtenerRutaEstado();
@@ -81,11 +91,6 @@ function guardarEstadoEnServidor(botonesSeleccionados) {
     console.error("Error al guardar el estado en el servidor:", error.message);
   }
 }
-
-app.get("/obtenerEstado", (req, res) => {
-  const estado = obtenerEstadoDesdeServidor();
-  res.json(estado);
-});
 
 function obtenerEstadoDesdeServidor() {
   try {
@@ -98,10 +103,10 @@ function obtenerEstadoDesdeServidor() {
   }
 }
 
+// Iniciar el servidor
 app.listen(PORT, () => {
-  // console.log(`Servidor escuchando en el puerto ${PORT}`);
+  console.log(`Servidor escuchando en el puerto ${PORT}`);
 
-  // Inicializa el estado si no existe
   const rutaEstado = obtenerRutaEstado();
   if (!fs.existsSync(rutaEstado)) {
     fs.writeFileSync(rutaEstado, JSON.stringify({ botonesSeleccionados: [] }));
