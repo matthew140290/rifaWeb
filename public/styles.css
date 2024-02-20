@@ -1,0 +1,148 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 20px;
+}
+
+h1 {
+  color: #333;
+  margin: 2px 0 0 0;
+}
+
+h2 {
+  margin: 0;
+}
+
+.seleccionado {
+  display: none;
+}
+
+button {
+  margin: 5px;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+button[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+input[type="submit"] {
+  margin: 5px;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+input[type="submit"]:hover {
+  background-color: #45a049;
+}
+
+input {
+  padding: 8px;
+  margin: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+label {
+  color: #333;
+  display: block;
+  margin: 10px 0 5px;
+}
+p {
+  margin-bottom: 10px;
+  line-height: 1.2;
+  margin: 3px 0 0 0;
+}
+
+span {
+  display: block;
+  text-align: left;
+  margin-left: 23px;
+  color: red;
+}
+
+ol {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+li {
+  color: #006400; /* Color verde oscuro */
+}
+
+li:last-child {
+  color: red;
+}
+
+h4 {
+  color: red;
+  width: 70%; /* Ancho del 80% del contenedor padre */
+  text-align: center;
+  margin-top: 0;
+}
+
+h3 {
+  margin: 0;
+}
+
+#formularioRifa {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  align-items: end;
+}
+
+#historial p {
+  order: -1; /* Revertir el orden del historial */
+  text-align: left;
+  margin-bottom: 5px;
+}
+
+#resultado {
+  margin-top: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+#error-message {
+  color: red;
+  margin-top: 10px;
+}
+
+#historial {
+  margin-top: 20px;
+  text-align: left;
+}
+
+#numeros {
+  width: 245px;
+}
+
+#nombre {
+  width: 280px;
+}
+#btnEnviar {
+  height: 40px;
+}
+
+.important-note {
+  display: flex;
+  justify-content: center;
+}

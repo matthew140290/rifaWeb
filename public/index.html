@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rifa</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1>Rifa Web</h1>
+    <h2>¡Gana 10 milones de pesos en efectivo!</h2>
+    <h2>
+      ¿Despues de carnavales quedaste con los bolsillos pelados y el colegio de
+      tus hijos te remató?
+    </h2>
+    <p>
+      Esta es tu oportunidad para darte un respiro y recuperar esa platica que
+      se te escapó en ron y en útiles escolares.
+    </p>
+    <span>Instrucciones de como jugar:</span>
+    <ol>
+      <li>
+        debes seleccionar uno de los botones disponibles de color verde (solo
+        seleccionar uno, luego llenar la demas informacion y enviarla).
+      </li>
+      <li>
+        Donde dice agregar cifras adicionales, debes agregar una cifra de 2
+        digitos, si agregas mas, solo se tendrán en cuenta las dos primeras
+        (agrega las 2 cifras que quieras).
+      </li>
+      <li>
+        En el campo nombre, debes agregar tu nombre completo, ¡verifica que sea
+        tu nombre completo para evitar confusiones!
+      </li>
+      <li>
+        Dale al botón enviar informacion y automaticamente estarás participando
+        por el premio.
+      </li>
+      <li>
+        ¡Muy importante! Solo jugarán los números que sean cancelados 3 días
+        antes de la fecha limite.
+      </li>
+    </ol>
+
+    <h3>
+      La Rifa jugará con la loteria del
+      <strong>Sinuano - Noche el 29 de febrero de 2024 - </strong>
+      <cite>Responsables: Manuel Jimenez y Matthew Ruiz</cite>
+    </h3>
+
+    <h2 class="valor">Valor Rifa: $10.000</h2>
+
+    <div class="important-note">
+      <h4>
+        Nota importante: por favor no elijas mas de un número antes de completar
+        todos los campos y posteriormente enviarlos, si seleccionas dos números
+        antes de enviar toda la información, solo se tendrá en cuenta el ultimo
+        y el primer numero se eliminrá sacandolo de la rifa.
+      </h4>
+    </div>
+
+    <h3>Números Disponibles:</h3>
+
+    <!-- Crear botones del 00 al 99 -->
+    <div id="botones-container"></div>
+
+    <!-- Agregar input para dos números -->
+    <form id="formularioRifa">
+      <div id="container">
+        <label for="numeros">Agregar dos números adicionales:</label>
+        <input type="number" id="numeros" name="numeros" min="0" max="99" />
+      </div>
+
+      <div id="container">
+        <label for="nombre">Nombre completo:</label>
+        <input type="text" id="nombre" name="nombre" />
+      </div>
+      <!-- Agregar input para el nombre completo -->
+
+      <!-- Input de tipo submit para enviar la información -->
+      <input type="submit" id="btnEnviar" value="Guardar Información" />
+    </form>
+
+    <!-- Div para mostrar el resultado -->
+    <div id="resultado"></div>
+
+    <!-- Mensaje de error -->
+    <div id="error-message"></div>
+
+    <!-- Historial de participantes -->
+    <div id="historial"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
