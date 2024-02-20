@@ -1,11 +1,16 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
-const fs = require("fs");
 const cors = require("cors");
+const { MongoClient } = require("mongodb");
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Utilizar el puerto proporcionado por el entorno o 3000 como predeterminado
+const PORT = process.env.PORT || 3000;
+
+// Reemplaza <MONGO_CONNECTION_STRING> con la cadena de conexión de tu base de datos MongoDB
+const MONGO_CONNECTION_STRING =
+  "mongodb+srv://rifadb:U6f2ChTltRGlgHwe@cluster0.ha5slsf.mongodb.net/";
+
 app.use(
   cors({
     origin: "*",
@@ -13,110 +18,123 @@ app.use(
     credentials: true,
   })
 );
-// Middleware para procesar datos JSON y formularios
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Middleware para servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, "public")));
 
-// Definir rutas de archivos de historial y estado
-const obtenerRutaHistorial = () => path.join(__dirname, "historial.json");
-const obtenerRutaEstado = () => path.join(__dirname, "estado.json");
+// Conectar a MongoDB
+let db;
 
-// Manejadores de rutas
+(async () => {
+  try {
+    const client = await MongoClient.connect(MONGO_CONNECTION_STRING, {});
 
-app.post("/guardarInformacion", (req, res) => {
+    db = client.db();
+    console.log("Conexión a MongoDB establecida correctamente");
+  } catch (error) {
+    console.error("Error al conectar a MongoDB:", error.message);
+  }
+})();
+
+app.post("/guardarInformacion", async (req, res) => {
   const participante = req.body;
-  const { historial, estado } = obtenerHistorial();
+  const { historial, estado } = await obtenerHistorial();
+
   participante.botonSeleccionado = estado.botonSeleccionado;
+
   const nuevoHistorial = [...historial, participante];
-  guardarHistorialYEstado({ historial: nuevoHistorial, estado });
+
+  await guardarHistorialYEstado({ historial: nuevoHistorial, estado });
   res.send("Información guardada exitosamente.");
 });
 
-app.get("/obtenerHistorial", (req, res) => {
-  const historial = obtenerHistorial().historial;
+app.get("/obtenerHistorial", async (req, res) => {
+  const historial = (await obtenerHistorial()).historial;
   res.json(historial);
 });
 
-app.post("/actualizarEstado", (req, res) => {
+app.post("/actualizarEstado", async (req, res) => {
   const { botonesSeleccionados } = req.body;
-  guardarEstadoEnServidor(botonesSeleccionados);
+  await guardarEstadoEnServidor(botonesSeleccionados);
   res.json({ success: true });
 });
 
-app.get("/obtenerEstado", (req, res) => {
-  const estado = obtenerEstadoDesdeServidor();
+app.get("/obtenerEstado", async (req, res) => {
+  const estado = await obtenerEstadoDesdeServidor();
   res.json(estado);
 });
 
-// Funciones auxiliares
-
-function obtenerHistorial() {
+async function obtenerHistorial() {
   try {
-    const rutaHistorial = obtenerRutaHistorial();
-    const dataHistorial = fs.existsSync(rutaHistorial)
-      ? fs.readFileSync(rutaHistorial, "utf8")
-      : "[]";
+    const historialCollection = db.collection("historial");
+    const estadoCollection = db.collection("estado");
 
-    const rutaEstado = obtenerRutaEstado();
-    const dataEstado = fs.existsSync(rutaEstado)
-      ? fs.readFileSync(rutaEstado, "utf8")
-      : "{}";
-
-    const historial = JSON.parse(dataHistorial) || [];
-    const estado = JSON.parse(dataEstado) || {};
+    const historial = await historialCollection.find().toArray();
+    const estado = (await estadoCollection.findOne()) || {};
 
     return { historial, estado };
   } catch (error) {
-    console.error("Error al leer el historial o estado:", error.message);
+    console.error(
+      "Error al leer el historial o estado desde MongoDB:",
+      error.message
+    );
     return { historial: [], estado: {} };
   }
 }
 
-function guardarHistorialYEstado({ historial, estado }) {
+async function guardarHistorialYEstado({ historial, estado }) {
   try {
-    const rutaHistorial = obtenerRutaHistorial();
-    const rutaEstado = obtenerRutaEstado();
+    const historialCollection = db.collection("historial");
+    const estadoCollection = db.collection("estado");
 
-    fs.writeFileSync(rutaHistorial, JSON.stringify(historial));
-    fs.writeFileSync(rutaEstado, JSON.stringify(estado));
+    await historialCollection.deleteMany({});
+    await historialCollection.insertMany(historial);
 
-    console.log("Historial y estado guardados correctamente.");
+    await estadoCollection.deleteMany({});
+    await estadoCollection.insertOne(estado);
+
+    console.log("Historial y estado guardados correctamente en MongoDB.");
   } catch (error) {
-    console.error("Error al guardar el historial o estado:", error.message);
+    console.error(
+      "Error al guardar el historial o estado en MongoDB:",
+      error.message
+    );
   }
 }
 
-function guardarEstadoEnServidor(botonesSeleccionados) {
+async function obtenerEstadoDesdeServidor() {
   try {
-    const rutaEstado = obtenerRutaEstado();
-    fs.writeFileSync(rutaEstado, JSON.stringify({ botonesSeleccionados }));
-    console.log("Estado guardado en el servidor correctamente.");
-  } catch (error) {
-    console.error("Error al guardar el estado en el servidor:", error.message);
-  }
-}
+    const estadoCollection = db.collection("estado");
+    const estado = (await estadoCollection.findOne()) || {};
 
-function obtenerEstadoDesdeServidor() {
-  try {
-    const ruta = obtenerRutaEstado();
-    const data = fs.readFileSync(ruta, "utf8");
-    return JSON.parse(data) || {};
+    return estado;
   } catch (error) {
-    console.error("Error al leer el estado desde el servidor:", error.message);
+    console.error(
+      "Error al leer el estado desde el servidor en MongoDB:",
+      error.message
+    );
     return {};
   }
 }
 
-// Iniciar el servidor
+async function guardarEstadoEnServidor(botonesSeleccionados) {
+  try {
+    const estadoCollection = db.collection("estado");
+
+    await estadoCollection.deleteMany({});
+    await estadoCollection.insertOne({ botonesSeleccionados });
+
+    console.log("Estado guardado en el servidor correctamente en MongoDB.");
+  } catch (error) {
+    console.error(
+      "Error al guardar el estado en el servidor en MongoDB:",
+      error.message
+    );
+  }
+}
+
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
-
-  const rutaEstado = obtenerRutaEstado();
-  if (!fs.existsSync(rutaEstado)) {
-    fs.writeFileSync(rutaEstado, JSON.stringify({ botonesSeleccionados: [] }));
-    console.log("Estado inicializado correctamente.");
-  }
 });
