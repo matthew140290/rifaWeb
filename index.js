@@ -60,11 +60,18 @@ function obtenerHistorial() {
       ? fs.readFileSync(rutaHistorial, "utf8")
       : "[]";
 
+    const rutaEstado = obtenerRutaEstado();
+    const dataEstado = fs.existsSync(rutaEstado)
+      ? fs.readFileSync(rutaEstado, "utf8")
+      : "{}";
+
     const historial = JSON.parse(dataHistorial) || [];
-    return { historial };
+    const estado = JSON.parse(dataEstado) || {};
+
+    return { historial, estado };
   } catch (error) {
-    console.error("Error al leer el historial:", error.message);
-    return { historial: [] };
+    console.error("Error al leer el historial o estado:", error.message);
+    return { historial: [], estado: {} };
   }
 }
 
@@ -95,12 +102,11 @@ function guardarEstadoEnServidor(botonesSeleccionados) {
 function obtenerEstadoDesdeServidor() {
   try {
     const ruta = obtenerRutaEstado();
-    const data = fs.existsSync(ruta) ? fs.readFileSync(ruta, "utf8") : "{}";
-    const estado = JSON.parse(data) || {};
-    return { estado };
+    const data = fs.readFileSync(ruta, "utf8");
+    return JSON.parse(data) || {};
   } catch (error) {
     console.error("Error al leer el estado desde el servidor:", error.message);
-    return { estado: {} };
+    return {};
   }
 }
 
