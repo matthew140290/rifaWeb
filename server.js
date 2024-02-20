@@ -6,7 +6,13 @@ const cors = require("cors");
 
 const app = express();
 const PORT = process.env.PORT || 3000; // Utilizar el puerto proporcionado por el entorno o 3000 como predeterminado
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+  })
+);
 // Middleware para procesar datos JSON y formularios
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

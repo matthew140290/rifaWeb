@@ -3,7 +3,7 @@ let participantes = [];
 
 document.addEventListener("DOMContentLoaded", function () {
   // Obtener el estado actual desde el servidor
-  fetch("/obtenerEstado")
+  fetch("https://rifa-web-tawny.vercel.app/obtenerEstado")
     .then((response) => response.json())
     .then((data) => {
       const botonesSeleccionados = data.botonesSeleccionados || [];
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
   // Hacer una solicitud al servidor para obtener el historial al cargar la página
-  fetch("/obtenerHistorial")
+  fetch("https://rifa-web-tawny.vercel.app/obtenerHistorial")
     .then((response) => response.json())
     .then((data) => {
       // Verificar si data es un array
@@ -139,7 +139,7 @@ function capturarValores(numero) {
 
 function actualizarEstadoServidor(botonesSeleccionados) {
   // Realiza una solicitud al servidor para actualizar el estado
-  fetch("/actualizarEstado", {
+  fetch("https://rifa-web-tawny.vercel.app/actualizarEstado", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -190,7 +190,7 @@ function mostrarInformacion() {
   // Actualizar la interfaz con la información guardada
   mostrarInformacionEnPantalla(participante);
 
-  fetch("/guardarInformacion", {
+  fetch("https://rifa-web-tawny.vercel.app/guardarInformacion", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
