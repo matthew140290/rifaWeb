@@ -78,6 +78,7 @@ function ocultarBotonSeleccionado() {
 
 function crearBotones() {
   const botonesContainer = document.getElementById("botones-container");
+  console.log("Creando botones..."); // Agrega este console.log
   for (let i = 0; i < 100; i++) {
     const button = document.createElement("button");
     const numero = String(i).padStart(2, "0");
