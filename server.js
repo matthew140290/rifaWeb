@@ -2,10 +2,11 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const fs = require("fs");
+const cors = require("cors");
 
 const app = express();
 const PORT = process.env.PORT || 3000; // Utilizar el puerto proporcionado por el entorno o 3000 como predeterminado
-
+app.use(cors());
 // Middleware para procesar datos JSON y formularios
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
