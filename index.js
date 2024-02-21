@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
@@ -6,10 +7,7 @@ const { MongoClient } = require("mongodb");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// Reemplaza <MONGO_CONNECTION_STRING> con la cadena de conexión de tu base de datos MongoDB
-const MONGO_CONNECTION_STRING =
-  "mongodb+srv://rifadb:U6f2ChTltRGlgHwe@cluster0.ha5slsf.mongodb.net/";
+const MONGO_CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING;
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -29,13 +27,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, "public")));
 
-// Conectar a MongoDB
 let db;
 
-(async () => {
+(async function () {
   try {
     const client = await MongoClient.connect(MONGO_CONNECTION_STRING, {});
-
     db = client.db();
     console.log("Conexión a MongoDB establecida correctamente");
   } catch (error) {
@@ -44,100 +40,90 @@ let db;
 })();
 
 app.post("/guardarInformacion", async (req, res) => {
-  const participante = req.body;
-  const { historial, estado } = await obtenerHistorial();
+  try {
+    const participante = req.body;
+    const { historial, estado } = await obtenerHistorial();
 
-  participante.botonSeleccionado = estado.botonSeleccionado;
+    participante.botonSeleccionado = estado.botonSeleccionado;
 
-  const nuevoHistorial = [...historial, participante];
+    const nuevoHistorial = [...historial, participante];
 
-  await guardarHistorialYEstado({ historial: nuevoHistorial, estado });
-  res.send("Información guardada exitosamente.");
+    await guardarHistorialYEstado({ historial: nuevoHistorial, estado });
+    res.send("Información guardada exitosamente.");
+  } catch (error) {
+    console.error("Error al guardar información:", error.message);
+    res.status(500).json({ error: "Error al guardar información" });
+  }
 });
 
 app.get("/obtenerHistorial", async (req, res) => {
-  const historial = (await obtenerHistorial()).historial;
-  res.json(historial);
+  try {
+    const historial = (await obtenerHistorial()).historial;
+    res.json(historial);
+  } catch (error) {
+    console.error("Error al obtener historial:", error.message);
+    res.status(500).json({ error: "Error al obtener historial" });
+  }
 });
 
 app.post("/actualizarEstado", async (req, res) => {
-  const { botonesSeleccionados } = req.body;
-  await guardarEstadoEnServidor(botonesSeleccionados);
-  res.json({ success: true });
+  try {
+    const { botonesSeleccionados } = req.body;
+    await guardarEstadoEnServidor(botonesSeleccionados);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error al actualizar estado:", error.message);
+    res.status(500).json({ error: "Error al actualizar estado" });
+  }
 });
 
 app.get("/obtenerEstado", async (req, res) => {
-  const estado = await obtenerEstadoDesdeServidor();
-  res.json(estado);
+  try {
+    const estado = await obtenerEstadoDesdeServidor();
+    res.json(estado);
+  } catch (error) {
+    console.error("Error al obtener estado:", error.message);
+    res.status(500).json({ error: "Error al obtener estado" });
+  }
 });
 
 async function obtenerHistorial() {
-  try {
-    const historialCollection = db.collection("historial");
-    const estadoCollection = db.collection("estado");
+  const historialCollection = db.collection("historial");
+  const estadoCollection = db.collection("estado");
 
-    const historial = await historialCollection.find().toArray();
-    const estado = (await estadoCollection.findOne()) || {};
+  const historial = await historialCollection.find().toArray();
+  const estado = (await estadoCollection.findOne()) || {};
 
-    return { historial, estado };
-  } catch (error) {
-    console.error(
-      "Error al leer el historial o estado desde MongoDB:",
-      error.message
-    );
-    return { historial: [], estado: {} };
-  }
+  return { historial, estado };
 }
 
 async function guardarHistorialYEstado({ historial, estado }) {
-  try {
-    const historialCollection = db.collection("historial");
-    const estadoCollection = db.collection("estado");
+  const historialCollection = db.collection("historial");
+  const estadoCollection = db.collection("estado");
 
-    await historialCollection.deleteMany({});
-    await historialCollection.insertMany(historial);
+  await historialCollection.deleteMany({});
+  await historialCollection.insertMany(historial);
 
-    await estadoCollection.deleteMany({});
-    await estadoCollection.insertOne(estado);
+  await estadoCollection.deleteMany({});
+  await estadoCollection.insertOne(estado);
 
-    console.log("Historial y estado guardados correctamente en MongoDB.");
-  } catch (error) {
-    console.error(
-      "Error al guardar el historial o estado en MongoDB:",
-      error.message
-    );
-  }
+  console.log("Historial y estado guardados correctamente en MongoDB.");
 }
 
 async function obtenerEstadoDesdeServidor() {
-  try {
-    const estadoCollection = db.collection("estado");
-    const estado = (await estadoCollection.findOne()) || {};
+  const estadoCollection = db.collection("estado");
+  const estado = (await estadoCollection.findOne()) || {};
 
-    return estado;
-  } catch (error) {
-    console.error(
-      "Error al leer el estado desde el servidor en MongoDB:",
-      error.message
-    );
-    return {};
-  }
+  return estado;
 }
 
 async function guardarEstadoEnServidor(botonesSeleccionados) {
-  try {
-    const estadoCollection = db.collection("estado");
+  const estadoCollection = db.collection("estado");
 
-    await estadoCollection.deleteMany({});
-    await estadoCollection.insertOne({ botonesSeleccionados });
+  await estadoCollection.deleteMany({});
+  await estadoCollection.insertOne({ botonesSeleccionados });
 
-    console.log("Estado guardado en el servidor correctamente en MongoDB.");
-  } catch (error) {
-    console.error(
-      "Error al guardar el estado en el servidor en MongoDB:",
-      error.message
-    );
-  }
+  console.log("Estado guardado en el servidor correctamente en MongoDB.");
 }
 
 app.listen(PORT, () => {
