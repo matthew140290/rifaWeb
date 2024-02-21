@@ -11,6 +11,11 @@ const PORT = process.env.PORT || 3000;
 const MONGO_CONNECTION_STRING =
   "mongodb+srv://rifadb:U6f2ChTltRGlgHwe@cluster0.ha5slsf.mongodb.net/";
 
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something went wrong!");
+});
+
 app.use(
   cors({
     origin: "*",
